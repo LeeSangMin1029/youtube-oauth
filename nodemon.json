@@ -1,0 +1,4 @@
+{
+  "ignore": ["bin/"],
+  "watch": ["src/"]
+}
