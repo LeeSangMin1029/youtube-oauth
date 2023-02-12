@@ -1,14 +1,8 @@
-import { NextFunction, Request, Response, Router } from 'express';
-
-const userLogged = (req: Request, res: Response, next: NextFunction) => {
-  if (req.isAuthenticated()) return next();
-  res.redirect('auth/google');
-};
+import { Router } from 'express';
+import { oauthCredentials, youtubeAPICall } from '@/controller';
+import { userAuthCheck } from '@/middleware';
 
 const router = Router();
-
-router.get('/', userLogged, function (req: Request, res: Response) {
-  res.send(req.user);
-});
+router.get('/', userAuthCheck, oauthCredentials, youtubeAPICall);
 
 export default router;

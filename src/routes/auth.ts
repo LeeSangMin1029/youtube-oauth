@@ -1,16 +1,8 @@
 import { Router } from 'express';
-import passport from 'passport';
+import { passAuthAccess, passAuthRedirect } from '@/controller';
 
 const router = Router();
-
-router.get('/google', passport.authenticate('google'));
-
-router.get(
-  '/google/redirect',
-  passport.authenticate('google', {
-    successRedirect: '/api/youtube',
-    failureRedirect: '/',
-  })
-);
+router.get('/google', passAuthAccess);
+router.get('/google/redirect', passAuthRedirect);
 
 export default router;

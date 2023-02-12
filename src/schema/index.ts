@@ -1,1 +1,1 @@
-export { User, SUser } from './User';
+export { User, UserDocument } from './User';

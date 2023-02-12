@@ -4,8 +4,7 @@ import mongoose from 'mongoose';
 import express from 'express';
 import session from 'express-session';
 import passport from 'passport';
-import authRoutes from '@/routes/auth';
-import youtubeRoutes from '@/routes/youtube';
+import { authRoutes, youtubeRoutes } from '@/routes';
 import { googleStrategy } from '@/strategies';
 
 async function bootstrap() {
