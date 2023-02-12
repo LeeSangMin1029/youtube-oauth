@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { google, youtube_v3 } from 'googleapis';
+import { GaxiosError } from 'googleapis-common';
 import { getOAuth } from '@/utils';
 
 export const oauthCredentials = async (
@@ -21,14 +22,26 @@ export const oauthCredentials = async (
   }
 };
 
-export const youtubeAPICall = (req: Request, res: Response) => {
+export const youtubeAPICall = async (req: Request, res: Response) => {
   const youtube: youtube_v3.Youtube = google.youtube({
     version: 'v3',
     auth: req.authInfo,
   });
   try {
-  } catch (err) {
-    res.send(err);
+    const listParams: youtube_v3.Params$Resource$Videos$List = {
+      id: ['Lfu2XXeT59Y'],
+      part: ['id', 'snippet', 'statistics', 'player'],
+      fields:
+        'items(id,snippet(channelId,channelTitle,publishedAt,thumbnails(maxres),title),player,statistics(viewCount))',
+    };
+    const resList = await youtube.videos.list(listParams);
+    const videoResults: youtube_v3.Schema$Video = resList.data;
+    return res.json({ code: '200', data: videoResults });
+  } catch (e) {
+    if ((e as GaxiosError).response) {
+      const err = e as GaxiosError;
+      console.error(err.response);
+      res.send(err);
+    }
   }
-  res.send('hello');
 };
