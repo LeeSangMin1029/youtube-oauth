@@ -1,12 +1,12 @@
 import 'module-alias/register';
 import { env } from '@/config';
-import mongoose from 'mongoose';
 import cors from 'cors';
 import express from 'express';
 import session from 'express-session';
-import passport from 'passport';
-import { authRoutes, youtubeRoutes } from '@/routes';
-import { googleStrategy } from '@/strategies';
+import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import { authRoutes } from '@/routes';
 import { headerSetting } from '@/middleware';
 
 const allowedOrigins = ['http://localhost:5173', 'https://accounts.google.com'];
@@ -17,25 +17,25 @@ const options: cors.CorsOptions = {
 };
 
 async function bootstrap() {
+  const oneDay = 1000 * 60 * 60 * 24;
   const app = express();
   try {
-    const uri = `mongodb+srv://youtube-user:${env.db_password}@cluster0.xbwhx.mongodb.net/?retryWrites=true&w=majority`;
-    mongoose.set('strictQuery', true);
-    mongoose.connect(uri).then(() => {
-      console.log('mongoose connected');
-    });
+    app.use(helmet());
     app.use(cors(options));
+    app.use(morgan('combined'));
     app.use(express.urlencoded({ extended: true }));
     app.use(express.json());
     app.use(
-      session({ secret: 'secret key', resave: false, saveUninitialized: false })
+      session({
+        secret: 'secret key',
+        resave: false,
+        cookie: { maxAge: oneDay },
+        saveUninitialized: false,
+      })
     );
-    app.use(passport.initialize());
-    app.use(passport.session());
+    app.use(cookieParser());
     app.use(headerSetting);
-    googleStrategy(passport);
     app.use('/api/auth', authRoutes);
-    app.use('/api/youtube', youtubeRoutes);
     app.listen(env.port, () => {
       console.log(`
       ################################################

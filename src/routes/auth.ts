@@ -1,8 +1,10 @@
 import { Router } from 'express';
-import { passAuthAccess, passAuthRedirect } from '@/controller/auth';
+import cors from 'cors';
+import { responseURL, getAuthToken, getValidToken } from '@/controller/auth';
 
 const router = Router();
-router.get('/google', passAuthAccess);
-router.get('/google/redirect', passAuthRedirect);
+router.post('/google', cors(), responseURL);
+router.get('/google/redirect', getAuthToken);
+router.post('/token', getValidToken);
 
 export default router;

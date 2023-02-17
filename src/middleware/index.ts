@@ -1,13 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
-
-export const userAuthCheck = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  if (req.isAuthenticated()) return next();
-  res.redirect('auth/google');
-};
+import { Response, NextFunction } from 'express';
 
 export const headerSetting = (_: any, res: Response, next: NextFunction) => {
   res.header('Access-Control-Allow-Origin', '*');
