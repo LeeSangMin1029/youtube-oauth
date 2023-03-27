@@ -1,5 +1,8 @@
 import 'module-alias/register';
 import { env } from '@/config';
+import fs from 'fs';
+import http from 'http';
+import https from 'https';
 import cors from 'cors';
 import express from 'express';
 import session from 'express-session';
@@ -9,11 +12,19 @@ import morgan from 'morgan';
 import { authRoutes } from '@/routes';
 import { headerSetting } from '@/middleware';
 
-const allowedOrigins = ['http://localhost:5173', 'https://accounts.google.com'];
+const allowedOrigins = [
+  'https://localhost:5173',
+  'https://accounts.google.com',
+];
 
-const options: cors.CorsOptions = {
+const corsOptions: cors.CorsOptions = {
   origin: allowedOrigins,
   credentials: true,
+};
+
+const SSLOptions = {
+  key: fs.readFileSync('./src/localhost-key.pem', 'utf-8'),
+  cert: fs.readFileSync('./src/localhost.pem', 'utf-8'),
 };
 
 async function bootstrap() {
@@ -21,7 +32,7 @@ async function bootstrap() {
   const app = express();
   try {
     app.use(helmet());
-    app.use(cors(options));
+    app.use(cors(corsOptions));
     app.use(morgan('combined'));
     app.use(express.urlencoded({ extended: true }));
     app.use(express.json());
@@ -36,10 +47,17 @@ async function bootstrap() {
     app.use(cookieParser());
     app.use(headerSetting);
     app.use('/api/auth', authRoutes);
-    app.listen(env.port, () => {
+    http.createServer(app).listen(env.http_port, () => {
       console.log(`
       ################################################
-      🛡️  Server listening on port: ${env.port}
+      🛡️ http Server listening on port: ${env.http_port}
+      ################################################
+    `);
+    });
+    https.createServer(SSLOptions, app).listen(env.https_port, () => {
+      console.log(`
+      ################################################
+      🛡️🛡️ https Server listening on port: ${env.https_port}
       ################################################
     `);
     });

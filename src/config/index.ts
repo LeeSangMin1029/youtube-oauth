@@ -13,7 +13,8 @@ import path from 'path';
 })();
 
 export const env = {
-  port: process.env.PORT,
+  http_port: process.env.HTTP_PORT,
+  https_port: process.env.HTTPS_PORT,
   client_id: process.env.CLIENT_ID,
   client_secret: process.env.CLIENT_SECRET,
   redirect_uri: process.env.REDIRECT_URI,
