@@ -107,4 +107,4 @@ dist
 *.pem
 
 # .env files
-*.env
+development.env
