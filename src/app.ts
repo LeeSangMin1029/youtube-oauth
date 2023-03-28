@@ -1,5 +1,6 @@
 import 'module-alias/register';
 import { env } from '@/config';
+import { connectDB } from '@/database';
 import fs from 'fs';
 import http from 'http';
 import https from 'https';
@@ -31,6 +32,7 @@ async function bootstrap() {
   const oneDay = 1000 * 60 * 60 * 24;
   const app = express();
   try {
+    await connectDB();
     app.use(helmet());
     app.use(cors(corsOptions));
     app.use(morgan('combined'));

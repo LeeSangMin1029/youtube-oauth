@@ -17,5 +17,7 @@ export const env = {
   https_port: process.env.HTTPS_PORT,
   client_id: process.env.CLIENT_ID,
   client_secret: process.env.CLIENT_SECRET,
+  token_secret_key: process.env.TOKEN_SECERT_KEY,
+  mongodb_secret: process.env.MONGODB_SECRET,
   redirect_uri: process.env.REDIRECT_URI,
 };
