@@ -1,12 +1,13 @@
 import { Request, Response } from 'express';
-import { getOAuth } from '@/utils';
-import { env } from '@/config';
-import fetch from 'node-fetch';
+import User from '@/models/User';
+import {
+  encryptHMAC,
+  getGrantToken,
+  getAPIData,
+  getOAuth,
+  matchedHMAC,
+} from '@/utils';
 import { getErrorMessage } from '@/errors';
-
-interface GoogleToken {
-  access_token: string;
-}
 
 export const responseURL = (req: Request, res: Response) => {
   const oauth2Client = getOAuth();
@@ -26,38 +27,34 @@ export const responseURL = (req: Request, res: Response) => {
 };
 
 export const getAuthToken = async (req: Request, res: Response) => {
-  const code = req.query.code;
-  const oauth2Client = getOAuth();
-  if (code) {
-    const { tokens } = await oauth2Client.getToken(code as string);
-    const { access_token, refresh_token, expiry_date } = tokens;
-    res.redirect(
-      `http://localhost:5173/token?accessToken=${access_token}&refreshToken=${refresh_token}`
-    );
-  }
-};
-
-export const getValidToken = async (req: Request, res: Response) => {
   try {
-    const { client_id, client_secret } = env;
-    const request = await fetch('https://www.googleapis.com/oauth2/v4/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        client_id,
-        client_secret,
-        refresh_token: req.body.refreshToken,
-        grant_type: 'refresh_token',
-      }),
-    });
-
-    const data = (await request.json()) as GoogleToken;
-    res.json({
-      accessToken: data.access_token,
-    });
-  } catch (error) {
-    res.json({ error: getErrorMessage(error) });
+    const oauth2Client = getOAuth();
+    const code = req.query.code;
+    const { tokens } = await oauth2Client.getToken(code as string);
+    const { access_token: accessToken, refresh_token: refreshToken } = tokens;
+    const gData = await getAPIData('google', accessToken!);
+    const yData = await getAPIData('youtube', accessToken!);
+    const { customUrl: userURL, thumbnails } = yData.items[0].snippet;
+    const name = gData.names[0].displayName;
+    const googleID = gData.resourceName.split('/')[1];
+    const email = gData.emailAddresses[0].value;
+    const user = await User.findOne({ googleID });
+    if (!user) {
+      User.create({
+        googleID,
+        email,
+        name,
+        thumbnails: thumbnails.default.url,
+        userURL,
+        refreshToken,
+        accessToken,
+      });
+    }
+    const encryptedID = encryptHMAC(googleID);
+    res.redirect(
+      `https://localhost:5173/login?userID=${encryptedID}&email=${email}&name=${name}&thumbnails=${thumbnails.default.url}&userURL=${userURL}`
+    );
+  } catch (err) {
+    console.error(getErrorMessage(err));
   }
 };
