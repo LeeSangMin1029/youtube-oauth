@@ -10,7 +10,7 @@ import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { authRoutes } from '@/routes';
+import { authRoutes, youtubeRoutes } from '@/routes';
 import { headerSetting } from '@/middleware';
 
 const allowedOrigins = [
@@ -49,6 +49,7 @@ async function bootstrap() {
     app.use(cookieParser());
     app.use(headerSetting);
     app.use('/api/auth', authRoutes);
+    app.use('/api/youtube', youtubeRoutes);
     http.createServer(app).listen(env.http_port, () => {
       console.log(`
       ################################################

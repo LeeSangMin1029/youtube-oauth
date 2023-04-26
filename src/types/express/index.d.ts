@@ -1,16 +1,11 @@
-import { UserDocument } from '@/schema';
-import { OAuth2Client } from 'google-auth-library';
-import { session } from 'express-session';
+import { Response } from 'express';
 
-declare global {
-  namespace Express {
-    export interface User extends UserDocument {}
-    export interface AuthInfo extends OAuth2Client {}
+declare module 'express-serve-static-core' {
+  interface Request {
+    googleID?: string;
+    email?: string;
   }
-}
-
-declare module 'express-session' {
-  export interface SessionData {
-    userId?: string;
+  interface Response {
+    token?: string;
   }
 }

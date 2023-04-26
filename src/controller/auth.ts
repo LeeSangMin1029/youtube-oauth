@@ -1,13 +1,9 @@
 import { Request, Response } from 'express';
 import User from '@/models/User';
-import {
-  encryptHMAC,
-  getGrantToken,
-  getAPIData,
-  getOAuth,
-  matchedHMAC,
-} from '@/utils';
+import { encryptHMAC, getAPIData, getOAuth } from '@/utils';
 import { getErrorMessage } from '@/errors';
+import { googleURL, googleParams } from '@/api/google';
+import { mineChannels, youtubeURL } from '@/api/youtube';
 
 export const responseURL = (req: Request, res: Response) => {
   const oauth2Client = getOAuth();
@@ -26,14 +22,14 @@ export const responseURL = (req: Request, res: Response) => {
   res.send({ url });
 };
 
-export const getAuthToken = async (req: Request, res: Response) => {
+export const createUser = async (req: Request, res: Response) => {
   try {
     const oauth2Client = getOAuth();
     const code = req.query.code;
     const { tokens } = await oauth2Client.getToken(code as string);
     const { access_token: accessToken, refresh_token: refreshToken } = tokens;
-    const gData = await getAPIData('google', accessToken!);
-    const yData = await getAPIData('youtube', accessToken!);
+    const gData = await getAPIData(googleURL, accessToken!, googleParams);
+    const yData = await getAPIData(youtubeURL, accessToken!, mineChannels);
     const { customUrl: userURL, thumbnails } = yData.items[0].snippet;
     const name = gData.names[0].displayName;
     const googleID = gData.resourceName.split('/')[1];

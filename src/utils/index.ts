@@ -2,6 +2,7 @@ import { google } from 'googleapis';
 import { env } from '@/config';
 import fetch from 'node-fetch';
 import CryptoJS from 'crypto-js';
+import { getErrorMessage } from '@/errors';
 
 interface GoogleToken {
   access_token: string;
@@ -9,17 +10,6 @@ interface GoogleToken {
   scope: string;
   token_type: string;
 }
-
-const apiType = [
-  {
-    name: 'youtube',
-    url: 'https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true',
-  },
-  {
-    name: 'google',
-    url: `https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses,photos`,
-  },
-];
 
 const { client_id, client_secret, redirect_uri } = env;
 
@@ -43,10 +33,23 @@ export const authInitConfig = (token: string) => {
   };
 };
 
-export const getAPIData = async (apiName: string, token: string) => {
-  const fetchURL = apiType.find((api) => api.name === apiName)?.url;
-  const res = await fetch(fetchURL!, authInitConfig(token));
-  return await res.json();
+export const getAPIData = async (
+  url: string,
+  token: string,
+  params?: string
+) => {
+  let fetchURL = params ? url + params : url;
+  let response;
+  try {
+    response = await fetch(fetchURL, authInitConfig(token));
+  } catch (error) {
+    console.error(getErrorMessage(error));
+  }
+  if (response?.ok) {
+    return await response.json();
+  } else {
+    return null;
+  }
 };
 
 export const matchedHMAC = (msg: string, hashed: string) =>
@@ -69,3 +72,20 @@ export const getGrantToken = async (grantToken: string) => {
   const { access_token } = (await request.json()) as GoogleToken;
   return access_token;
 };
+
+export const reduceChannelID = (items: Int32Array): string => {
+  let result = '';
+  if (!Array.isArray(items) || items.length === 0) {
+    return result;
+  }
+  result = items.reduce((acc, cur: any) => {
+    if (cur && cur.snippet && cur.snippet.channelId) {
+      return acc + cur.snippet.channelId + ',';
+    }
+    return acc;
+  }, '');
+  return result;
+};
+
+export const isEmptyObject = (param: any) =>
+  Object.keys(param).length === 0 && param.constructor === Object;
