@@ -1,8 +1,6 @@
 import { google } from 'googleapis';
 import { env } from '@/config';
 import fetch from 'node-fetch';
-import CryptoJS from 'crypto-js';
-import { getErrorMessage } from '@/errors';
 
 interface GoogleToken {
   access_token: string;
@@ -15,15 +13,6 @@ const { client_id, client_secret, redirect_uri } = env;
 
 export const getOAuth = () =>
   new google.auth.OAuth2(client_id, client_secret, redirect_uri);
-
-export const encryptHMAC = (msg: string) => {
-  const keyWA = CryptoJS.enc.Utf8.parse(env.token_secret_key as string);
-  const messWA = CryptoJS.enc.Hex.parse(msg);
-  const hashedData = CryptoJS.HmacSHA256(messWA, keyWA).toString(
-    CryptoJS.enc.Hex
-  );
-  return hashedData;
-};
 
 export const authInitConfig = (token: string) => {
   return {
@@ -39,21 +28,12 @@ export const getAPIData = async (
   params?: string
 ) => {
   let fetchURL = params ? url + params : url;
-  let response;
-  try {
-    response = await fetch(fetchURL, authInitConfig(token));
-  } catch (error) {
-    console.error(getErrorMessage(error));
-  }
-  if (response?.ok) {
+  const response = await fetch(fetchURL, authInitConfig(token));
+  if (response.ok) {
     return await response.json();
-  } else {
-    return null;
   }
+  return null;
 };
-
-export const matchedHMAC = (msg: string, hashed: string) =>
-  hashed === encryptHMAC(msg);
 
 export const getGrantToken = async (grantToken: string) => {
   const { client_id, client_secret } = env;
@@ -71,20 +51,6 @@ export const getGrantToken = async (grantToken: string) => {
   });
   const { access_token } = (await request.json()) as GoogleToken;
   return access_token;
-};
-
-export const reduceChannelID = (items: Int32Array): string => {
-  let result = '';
-  if (!Array.isArray(items) || items.length === 0) {
-    return result;
-  }
-  result = items.reduce((acc, cur: any) => {
-    if (cur && cur.snippet && cur.snippet.channelId) {
-      return acc + cur.snippet.channelId + ',';
-    }
-    return acc;
-  }, '');
-  return result;
 };
 
 export const isEmptyObject = (param: any) =>

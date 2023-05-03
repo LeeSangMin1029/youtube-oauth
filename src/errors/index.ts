@@ -1,4 +1,2 @@
-export const getErrorMessage = (error: unknown) => {
-  if (error instanceof Error) return error.message;
-  return String(error);
-};
+export { AppError, HttpCode } from './AppError';
+export { errorHandler } from './ErrorHandler';
