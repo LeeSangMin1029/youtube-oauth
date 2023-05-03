@@ -1,3 +1,4 @@
+import 'express-async-errors';
 import { Router } from 'express';
 import cors from 'cors';
 import { responseURL, createUser } from '@/controller/auth';
