@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import User from '@/models/User';
-import { errorHandler } from '@/errors';
+import { AppError, HttpCode, errorHandler } from '@/errors';
 
 export const headerSetting = (_: any, res: Response, next: NextFunction) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -12,14 +12,21 @@ export const headerSetting = (_: any, res: Response, next: NextFunction) => {
   return next();
 };
 
-export const validUser = async (
+export const authorized = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   const { googleID, email } = req.body;
+  if (!(googleID || email)) {
+    throw new AppError({
+      httpCode: HttpCode.UNAUTHORIZED,
+      description: '클라이언트 인증 정보가 잘못되었습니다.',
+    });
+  }
   const user = await User.findOne({ googleID, email });
-  res.token = user?.refreshToken!;
+  res.token = user?.refreshToken;
+  next();
 };
 
 export const loggerHandler = (
