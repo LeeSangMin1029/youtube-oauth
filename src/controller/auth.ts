@@ -1,12 +1,9 @@
 import { Request, Response } from 'express';
+import { getAPIProfile } from '@/service/auth';
 import User from '@/models/User';
-import { encryptHMAC, getAPIData, getOAuth } from '@/utils';
-import { getErrorMessage } from '@/errors';
-import { googleURL, googleParams } from '@/api/google';
-import { mineChannels, youtubeURL } from '@/api/youtube';
+import { oauth2Client, getToken, setGoogleAuth } from '@/utils';
 
-export const responseURL = (req: Request, res: Response) => {
-  const oauth2Client = getOAuth();
+export const responseURL = (_: Request, res: Response) => {
   const url = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: [
@@ -14,43 +11,33 @@ export const responseURL = (req: Request, res: Response) => {
       'https://www.googleapis.com/auth/youtube.force-ssl',
       'https://www.googleapis.com/auth/youtube.readonly',
       'https://www.googleapis.com/auth/youtubepartner',
-      'profile',
       'email',
+      'profile',
     ],
     prompt: 'consent',
   });
+  setGoogleAuth();
   res.send({ url });
 };
 
 export const createUser = async (req: Request, res: Response) => {
-  try {
-    const oauth2Client = getOAuth();
-    const code = req.query.code;
-    const { tokens } = await oauth2Client.getToken(code as string);
-    const { access_token: accessToken, refresh_token: refreshToken } = tokens;
-    const gData = await getAPIData(googleURL, accessToken!, googleParams);
-    const yData = await getAPIData(youtubeURL, accessToken!, mineChannels);
-    const { customUrl: userURL, thumbnails } = yData.items[0].snippet;
-    const name = gData.names[0].displayName;
-    const googleID = gData.resourceName.split('/')[1];
-    const email = gData.emailAddresses[0].value;
-    const user = await User.findOne({ googleID });
-    if (!user) {
-      User.create({
-        googleID,
-        email,
-        name,
-        thumbnails: thumbnails.default.url,
-        userURL,
-        refreshToken,
-        accessToken,
-      });
-    }
-    const encryptedID = encryptHMAC(googleID);
-    res.redirect(
-      `https://localhost:5173/login?userID=${encryptedID}&email=${email}&name=${name}&thumbnails=${thumbnails.default.url}&userURL=${userURL}`
-    );
-  } catch (err) {
-    console.error(getErrorMessage(err));
+  const tokenInfo = await getToken(req.query.code as string);
+  oauth2Client.setCredentials(tokenInfo.tokens);
+  const { thumbnails, userURL, name, email, googleID } = await getAPIProfile();
+  const user = await User.findOne({ googleID, email });
+  if (!user) {
+    const { access_token, refresh_token } = tokenInfo.tokens;
+    User.create({
+      googleID,
+      email,
+      name,
+      thumbnails,
+      userURL,
+      accessToken: access_token,
+      refreshToken: refresh_token,
+    });
   }
+  res.redirect(
+    `https://localhost:5173/login?userID=${googleID}&email=${email}&name=${name}&thumbnails=${thumbnails}&userURL=${userURL}`
+  );
 };
