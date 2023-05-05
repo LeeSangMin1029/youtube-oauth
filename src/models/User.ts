@@ -2,12 +2,12 @@ import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
   googleID: { type: String, required: true },
-  email: String,
-  name: String,
-  thumbnails: String,
-  userURL: String,
-  refreshToken: String,
-  accessToken: String,
+  email: { type: String, required: true },
+  name: { type: String, required: true },
+  thumbnails: { type: String, required: true },
+  userURL: { type: String, required: true },
+  accessToken: { type: String, required: true },
+  refreshToken: { type: String, required: true },
 });
 
 const User = mongoose.model('User', userSchema);
