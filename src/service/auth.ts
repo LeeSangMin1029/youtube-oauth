@@ -64,3 +64,10 @@ export const createUser = async (tokens: Credentials, profile: UserData) => {
 
 export const findUser = async (googleID: string) =>
   await User.findOne({ googleID });
+
+export const updateUser = async (googleID: string, updateToken: string) =>
+  await User.findOneAndUpdate(
+    { googleID },
+    { accessToken: updateToken },
+    { new: true }
+  );
