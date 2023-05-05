@@ -6,6 +6,8 @@ declare module 'express-serve-static-core' {
     email?: string;
   }
   interface Response {
-    token?: string;
+    access_token?: string;
+    refresh_token?: string;
+    googleID?: string;
   }
 }
