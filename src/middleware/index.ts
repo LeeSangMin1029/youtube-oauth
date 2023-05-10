@@ -25,9 +25,11 @@ export const authorized = async (
     });
   }
   const user = await User.findOne({ googleID, email });
-  res.refresh_token = user?.refreshToken;
-  res.access_token = user?.accessToken;
-  res.googleID = user?.googleID;
+  if (user) {
+    res.refresh_token = user.refreshToken;
+    res.access_token = user.accessToken;
+    res.googleID = user.googleID;
+  }
   next();
 };
 

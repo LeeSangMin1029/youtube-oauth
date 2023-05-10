@@ -30,7 +30,7 @@ export const getValidatedToken = async (
   oauth2Client.setCredentials({ refresh_token });
   const res = await oauth2Client.refreshAccessToken();
   const accessToken = res.credentials.access_token;
-  return accessToken;
+  return accessToken ? accessToken : '';
 };
 
 export const validateToken = async (checkToken: string) => {
