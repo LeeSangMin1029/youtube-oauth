@@ -24,6 +24,7 @@
     "googleapis": "^110.0.0",
     "helmet": "^6.0.1",
     "http-terminator": "^3.2.0",
+    "immutable": "^4.3.0",
     "module-alias": "^2.2.2",
     "mongoose": "^7.0.3",
     "morgan": "^1.10.0",
