@@ -12,6 +12,12 @@ type UserData = {
   userURL: string | null | undefined;
 };
 
+type UpdateUserOptions = {
+  accessToken?: string;
+  refreshToken?: string;
+  email?: string;
+};
+
 export const getYoutubeUser = async () => {
   const service = google.youtube('v3');
   const listParams: youtube_v3.Params$Resource$Channels$List = {
@@ -65,9 +71,9 @@ export const createUser = async (tokens: Credentials, profile: UserData) => {
 export const findUser = async (googleID: string) =>
   await User.findOne({ googleID });
 
-export const updateUser = async (googleID: string, updateToken: string) =>
-  await User.findOneAndUpdate(
-    { googleID },
-    { accessToken: updateToken },
-    { new: true }
-  );
+export const updateUser = async (
+  googleID: string,
+  options: UpdateUserOptions
+) => {
+  await User.findOneAndUpdate({ googleID }, { ...options }, { new: true });
+};
