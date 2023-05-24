@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import User from '@/models/User';
 import { AppError, HttpCode, errorHandler } from '@/errors';
+import { getValidatedToken } from '@/utils/token';
+import { oauth2Client, setGoogleAuth } from '@/utils/googleauth';
+import { updateUser } from '@/service/auth';
 
 export const headerSetting = (_: any, res: Response, next: NextFunction) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -17,19 +20,25 @@ export const authorized = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { googleID, email } = req.body;
-  if (!(googleID || email)) {
+  const { googleID } = req.body;
+  if (googleID === '') {
     throw new AppError({
       httpCode: HttpCode.UNAUTHORIZED,
       description: '클라이언트 인증 정보가 잘못되었습니다.',
     });
   }
-  const user = await User.findOne({ googleID, email });
+  const user = await User.findOne({ googleID });
   if (user) {
-    res.refresh_token = user.refreshToken;
-    res.access_token = user.accessToken;
-    res.googleID = user.googleID;
+    const { accessToken, refreshToken } = user;
+    const validToken = await getValidatedToken(accessToken, refreshToken);
+    if (accessToken !== validToken) {
+      oauth2Client.setCredentials({ access_token: validToken });
+      await updateUser(googleID, { accessToken: validToken });
+    } else {
+      oauth2Client.setCredentials({ access_token: accessToken });
+    }
   }
+  setGoogleAuth();
   next();
 };
 
