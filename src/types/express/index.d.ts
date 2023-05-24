@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import { YoutubeParams } from '@/types/youtube/index';
 
 declare module 'express-serve-static-core' {
   interface Request {
@@ -6,8 +7,6 @@ declare module 'express-serve-static-core' {
     email?: string;
   }
   interface Response {
-    access_token: string;
-    refresh_token: string;
-    googleID: string;
+    params: YoutubeParams;
   }
 }
