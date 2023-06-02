@@ -8,11 +8,11 @@ import { google } from 'googleapis';
 
 const videoParams: VideosListParams = {
   part: ['snippet', 'player', 'statistics'],
-  maxWidth: 1280,
-  maxHeight: 714,
+  maxWidth: 1268,
+  maxHeight: 713,
   regionCode: 'KR',
   fields:
-    'items(id,snippet(channelId,channelTitle,publishedAt,thumbnails,title),player,statistics(viewCount))',
+    'items(id,snippet(channelId,channelTitle,description,publishedAt,thumbnails,title),player,statistics(viewCount))',
 };
 
 const channelParams: ChannelsListParams = {

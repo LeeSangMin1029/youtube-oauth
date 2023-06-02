@@ -1,4 +1,7 @@
-import 'module-alias/register';
+import moduleAlias from 'module-alias';
+moduleAlias.addAliases({
+  '@': `${__dirname}`,
+});
 import { env } from '@/config';
 import { connectDB } from '@/database';
 import fs from 'fs';
