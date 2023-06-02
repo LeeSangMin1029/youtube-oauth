@@ -9,7 +9,7 @@
     "start": "yarn build:live",
     "build:live": "cross-env NODE_ENV=development nodemon --exec \"ts-node\" src/app.ts",
     "build:production": "tsc -p tsconfig.production.json",
-    "start:production": "cross-env NODE_ENV=production node bin/app.js"
+    "start:production": "cross-env --max-old-space-size=8192 NODE_ENV=production node bin/app.js"
   },
   "dependencies": {
     "@types/node": "^18.15.10",
