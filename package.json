@@ -7,18 +7,15 @@
   "license": "MIT",
   "scripts": {
     "start": "yarn build:live",
-    "build": "tsc -p .",
-    "build:live": "cross-env NODE_ENV=development nodemon --exec \"ts-node\" src/app.ts"
-  },
-  "_moduleAliases": {
-    "@": "src"
+    "build:live": "cross-env NODE_ENV=development nodemon --exec \"ts-node\" src/app.ts",
+    "build:production": "tsc -p tsconfig.production.json",
+    "start:production": "cross-env NODE_ENV=production node bin/app.js"
   },
   "dependencies": {
     "@types/node": "^18.15.10",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
-    "crypto-js": "^4.1.1",
     "express-async-errors": "^3.1.1",
     "express-session": "^1.17.3",
     "googleapis": "^110.0.0",
@@ -34,11 +31,11 @@
   "devDependencies": {
     "@types/cookie-parser": "^1.4.3",
     "@types/cors": "^2.8.13",
-    "@types/crypto-js": "^4.1.1",
     "@types/express": "^4.17.17",
     "@types/express-session": "^1.17.5",
     "@types/helmet": "^4.0.0",
     "@types/http-terminator": "^2.0.2",
+    "@types/module-alias": "^2.0.1",
     "@types/mongoose": "^5.11.97",
     "@types/morgan": "^1.9.4",
     "@types/node-fetch": "2",

@@ -1,5 +1,5 @@
 import { oauth2Client } from './googleauth';
-import fetch, { Response } from 'node-fetch';
+import fetch from 'node-fetch';
 
 type TokenInfo = {
   issued_to: string;
