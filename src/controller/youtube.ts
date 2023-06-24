@@ -7,6 +7,10 @@ export const getVideoItems = async (req: Request, res: Response) => {
   const videos = await getVideos(params);
   const id = getChannelsID(videos.items!);
   const channels = await getChannels(id);
-  const items = await mergeVideoChannel(videos.items!, channels.items!);
-  res.json({ items });
+  const videosInfo = await mergeVideoChannel(videos.items!, channels.items!);
+  res.json({
+    items: videosInfo,
+    nextPageToken: videos.nextPageToken,
+    pageInfo: videos.pageInfo,
+  });
 };
