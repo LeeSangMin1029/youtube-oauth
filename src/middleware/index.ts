@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import compression from 'compression';
 import User from '@/models/User';
 import { AppError, HttpCode, errorHandler } from '@/errors';
 import { getValidatedToken } from '@/utils/token';
@@ -40,6 +41,16 @@ export const authorized = async (
   }
   setGoogleAuth();
   next();
+};
+
+export const shouldCompress = (req: Request, res: Response) => {
+  if (req.headers['x-no-compression']) {
+    // don't compress responses with this request header
+    return false;
+  }
+
+  // fallback to standard filter function
+  return compression.filter(req, res);
 };
 
 export const loggerHandler = (
