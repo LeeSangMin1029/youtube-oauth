@@ -22,7 +22,7 @@ export const authorized = async (
   next: NextFunction
 ) => {
   const { googleID } = req.body;
-  if (googleID === '') {
+  if (!googleID || googleID === '') {
     throw new AppError({
       httpCode: HttpCode.UNAUTHORIZED,
       description: '클라이언트 인증 정보가 잘못되었습니다.',
