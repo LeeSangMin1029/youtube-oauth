@@ -11,7 +11,9 @@ import cors from 'cors';
 import { createHttpTerminator } from 'http-terminator';
 import express from 'express';
 import session from 'express-session';
+import MongoStore from 'connect-mongo';
 import cookieParser from 'cookie-parser';
+import compression from 'compression';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { authRoutes, youtubeRoutes } from '@/routes';
@@ -19,6 +21,7 @@ import {
   errorHandlerWithResponse,
   headerSetting,
   loggerHandler,
+  shouldCompress,
 } from '@/middleware';
 import './process';
 
@@ -32,32 +35,44 @@ const corsOptions: cors.CorsOptions = {
   credentials: true,
 };
 
-const SSLOptions = {
-  key: fs.readFileSync('./src/localhost-key.pem', 'utf-8'),
-  cert: fs.readFileSync('./src/localhost.pem', 'utf-8'),
-};
 const app = express();
 export const server = http.createServer(app);
 export const httpTerminator = createHttpTerminator({
   server,
 });
 
+const oneDay = 1000 * 60 * 60 * 24;
+const expressSession: session.SessionOptions = {
+  secret: 'secret key',
+  resave: false,
+  cookie: { maxAge: oneDay },
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: `mongodb+srv://youtube-user:${env.mongodb_secret}@cluster0.xbwhx.mongodb.net/?retryWrites=true&w=majority`,
+  }),
+};
+
+let SSLRoute = 'src';
+if (app.get('env') === 'production') {
+  SSLRoute = 'bin';
+  app.set('trust proxy', 1);
+  if (expressSession.cookie !== undefined) expressSession.cookie.secure = true;
+}
+
+const SSLOptions = {
+  key: fs.readFileSync(`./${SSLRoute}/localhost-key.pem`, 'utf-8'),
+  cert: fs.readFileSync(`./${SSLRoute}/localhost.pem`, 'utf-8'),
+};
+
 async function bootstrap() {
-  const oneDay = 1000 * 60 * 60 * 24;
   await connectDB();
+  app.use(compression({ filter: shouldCompress }));
   app.use(helmet());
   app.use(cors(corsOptions));
   app.use(morgan('combined'));
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
-  app.use(
-    session({
-      secret: 'secret key',
-      resave: false,
-      cookie: { maxAge: oneDay },
-      saveUninitialized: false,
-    })
-  );
+  app.use(session(expressSession));
   app.use(cookieParser());
   app.use(headerSetting);
   app.use('/api/auth', authRoutes);
