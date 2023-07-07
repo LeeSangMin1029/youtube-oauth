@@ -19,4 +19,5 @@ export const env = {
   token_secret_key: process.env.TOKEN_SECERT_KEY,
   mongodb_secret: process.env.MONGODB_SECRET,
   redirect_uri: process.env.REDIRECT_URI,
+  ENV,
 };
