@@ -27,6 +27,7 @@ import './process';
 
 const allowedOrigins = [
   'https://localhost:5173',
+  'https://main.d36sadhkoikcp5.amplifyapp.com/',
   'https://accounts.google.com',
 ];
 
